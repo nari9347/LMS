@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LMS login</title>
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    html, body { height: 100%; }
+    body { display: flex; justify-content: center; align-items: center; background: url('https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover; background-attachment: fixed; }
+    .overlay { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1; }
+    .login-container { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 350px; text-align: center; animation: slideIn 1s ease; }
+    @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .login-container img { width: 80px; margin-bottom: 20px; }
+    .login-container h1 { margin-bottom: 20px; color: #333; }
+    .login-container input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+    .login-container button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background-color: #007bff; color: white; font-size: 16px; cursor: pointer; transition: 0.3s; }
+    .login-container button:hover { background-color: #0056b3; }
+    .login-container p { margin-top: 15px; font-size: 14px; color: #555; }
+    .login-container p a { color: #007bff; text-decoration: none; }
+    .login-container p a:hover { text-decoration: underline; }
+    .msg { margin-top: 10px; font-size: 14px; color: #0b7a3a; display: none; }
+    .err { color: #b91c1c; }
+    /* quick nav */
+    .nav { position: absolute; top: 14px; right: 16px; z-index: 3; display: flex; gap: 14px; }
+    .nav a { color: #e5e7eb; text-decoration: none; background: rgba(0,0,0,0.35); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
+    .nav a:hover { background: rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">Home</a>
+    <a href="/docs">Docs</a>
+  </div>
+  <div class="overlay"></div>
+  <div class="login-container">
+    <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" alt="LMS Logo">
+    <h1>LMS LOGIN </h1>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <div id="msg" class="msg"></div>
+    </form>
+    <p>Don't have an account? <a href="/auth-ui/register.html">Sign Up</a></p>
+  </div>
+  <script>
+    const form = document.getElementById('loginForm');
+    const msg = document.getElementById('msg');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.style.display = 'none';
+      msg.classList.remove('err');
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      try {
+        const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        localStorage.setItem('token', data.token);
+        msg.textContent = 'Login successful! Redirecting...';
+        msg.style.display = 'block';
+        setTimeout(() => window.location.href = '/auth-ui/schools.html', 700);
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.classList.add('err');
+        msg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
+
+

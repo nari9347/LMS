@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LMS - Student Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #f8fafc; color: #1e293b; }
+    header { background: white; padding: 1rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .brand img { width: 32px; }
+    .user-info { display: flex; gap: 15px; align-items: center; }
+    .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn:hover { opacity: 0.9; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .section { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .section h2 { margin-bottom: 1.5rem; color: #1e293b; }
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .course-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; position: relative; transform: translateY(6px); opacity: 0; transition: transform .25s ease, box-shadow .25s ease; }
+    .course-card:hover { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(0,0,0,0.08); }
+    .course-card h3 { color: #1e293b; margin-bottom: 0.5rem; }
+    .course-card p { color: #64748b; margin-bottom: 1rem; }
+    .course-meta { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #64748b; margin-bottom: 1rem; }
+    .course-actions { display: flex; gap: 10px; }
+    .enrolled-badge { position: absolute; top: 1rem; right: 1rem; background: #10b981; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .msg { padding: 12px; border-radius: 8px; margin-bottom: 1rem; display: none; }
+    .msg.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .msg.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .loading { text-align: center; padding: 2rem; color: #64748b; }
+    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .tab { padding: 12px 24px; background: #e2e8f0; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .tab.active { background: #3b82f6; color: white; }
+    /* animations */
+    .section { animation: fadeInUp .5s ease forwards; opacity: 0; transform: translateY(10px); }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .btn-success:hover { animation: pulse 0.6s ease-in-out; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" alt="LMS">
+      <strong>LMS - Student Dashboard</strong>
+    </div>
+    <div class="user-info">
+      <span id="userName">Loading...</span>
+      <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('available')">Available Courses</button>
+      <button class="tab" onclick="showTab('enrolled')">My Courses</button>
+    </div>
+
+    <div id="availableTab" class="tab-content">
+      <div class="section">
+        <h2>Available Courses</h2>
+        <div id="availableMsg" class="msg"></div>
+        <div id="availableCourses" class="loading">Loading available courses...</div>
+      </div>
+    </div>
+
+    <div id="enrolledTab" class="tab-content" style="display: none;">
+      <div class="section">
+        <h2>My Enrolled Courses</h2>
+        <div id="enrolledMsg" class="msg"></div>
+        <div id="enrolledCourses" class="loading">Loading enrolled courses...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('token');
+    let user = null;
+    let availableCourses = [];
+    let enrolledCourses = [];
+
+    function requireAuth() {
+      if (!token) {
+        window.location.href = '/auth-ui/login.html';
+        return false;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.role !== 'Student') {
+          alert('Access denied. Student role required.');
+          window.location.href = '/auth-ui/login.html';
+          return false;
+        }
+        user = payload;
+        document.getElementById('userName').textContent = user.name;
+        return true;
+      } catch (e) {
+        localStorage.removeItem('token');
+        window.location.href = '/auth-ui/login.html';
+        return false;
+      }
+    }
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      
+      if (tabName === 'available') {
+        document.querySelector('.tab:first-child').classList.add('active');
+        document.getElementById('availableTab').style.display = 'block';
+      } else {
+        document.querySelector('.tab:last-child').classList.add('active');
+        document.getElementById('enrolledTab').style.display = 'block';
+        loadEnrolledCourses();
+      }
+    }
+
+    function showMsg(elementId, isSuccess, text) {
+      const msg = document.getElementById(elementId);
+      msg.textContent = text;
+      msg.className = `msg ${isSuccess ? 'success' : 'error'}`;
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 5000);
+    }
+
+    async function loadAvailableCourses() {
+      try {
+        const res = await fetch('/api/courses', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        availableCourses = await res.json();
+        
+        if (availableCourses.length === 0) {
+          document.getElementById('availableCourses').innerHTML = '<p style="text-align: center; color: #64748b;">No courses available.</p>';
+          return;
+        }
+
+        const html = availableCourses.map((course, idx) => {
+          const isEnrolled = enrolledCourses.some(ec => ec._id === course._id);
+          return `
+            <div class="course-card" style="animation: fadeInUp .4s ease forwards; animation-delay: ${idx*60}ms;">
+              ${isEnrolled ? '<div class="enrolled-badge">Enrolled</div>' : ''}
+              <h3>${course.title}</h3>
+              <p>${course.description}</p>
+              <div class="course-meta">
+                <span>Duration: ${course.duration}</span>
+                <span>Teacher: ${course.teacher.name}</span>
+              </div>
+              <div class="course-actions">
+                ${!isEnrolled ? 
+                  `<button class="btn btn-success" onclick="enrollInCourse('${course._id}')">Enroll</button>` :
+                  `<button class="btn btn-primary" disabled>Already Enrolled</button>`
+                }
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('availableCourses').innerHTML = `<div class="courses-grid">${html}</div>`;
+      } catch (err) {
+        showMsg('availableMsg', false, 'Failed to load courses');
+        document.getElementById('availableCourses').innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading courses</p>';
+      }
+    }
+
+    async function loadEnrolledCourses() {
+      try {
+        const res = await fetch('/api/courses/me/enrollments', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        enrolledCourses = await res.json();
+        
+        if (enrolledCourses.length === 0) {
+          document.getElementById('enrolledCourses').innerHTML = '<p style="text-align: center; color: #64748b;">You are not enrolled in any courses yet.</p>';
+          return;
+        }
+
+        const html = enrolledCourses.map((course, idx) => `
+          <div class="course-card" style="animation: fadeInUp .4s ease forwards; animation-delay: ${idx*60}ms;">
+            <div class="enrolled-badge">Enrolled</div>
+            <h3>${course.title}</h3>
+            <p>${course.description}</p>
+            <div class="course-meta">
+              <span>Duration: ${course.duration}</span>
+              <span>Teacher: ${course.teacher.name}</span>
+            </div>
+            <div class="course-actions">
+              <button class="btn btn-primary">View Course</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.getElementById('enrolledCourses').innerHTML = `<div class="courses-grid">${html}</div>`;
+      } catch (err) {
+        showMsg('enrolledMsg', false, 'Failed to load enrolled courses');
+        document.getElementById('enrolledCourses').innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading enrolled courses</p>';
+      }
+    }
+
+    async function enrollInCourse(courseId) {
+      const button = event.target;
+      const originalText = button.textContent;
+      
+      // Animate button during enrollment
+      button.textContent = 'Enrolling...';
+      button.disabled = true;
+      button.style.animation = 'pulse 1s ease-in-out infinite';
+      
+      try {
+        const res = await fetch(`/api/courses/${courseId}/enroll`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to enroll');
+
+        // Success animation
+        button.textContent = '✓ Enrolled!';
+        button.style.background = '#10b981';
+        button.style.animation = 'none';
+        
+        setTimeout(() => {
+          showMsg('availableMsg', true, 'Successfully enrolled in course!');
+          loadEnrolledCourses();
+          loadAvailableCourses();
+        }, 500);
+        
+      } catch (err) {
+        button.textContent = originalText;
+        button.disabled = false;
+        button.style.animation = 'none';
+        showMsg('availableMsg', false, err.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/auth-ui/login.html';
+    }
+
+    // Initialize
+    if (requireAuth()) {
+      loadEnrolledCourses();
+      loadAvailableCourses();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beyond Books • Dashboard</title>
+  <style>
+    body{margin:0;font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;background:#0f172a;color:#e5e7eb}
+    header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;background:#0b1220;border-bottom:1px solid rgba(255,255,255,.08)}
+    .brand{display:flex;gap:10px;align-items:center}
+    .brand img{width:28px}
+    .wrap{padding:24px}
+    .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:16px}
+    .muted{color:#9ca3af}
+    button{padding:8px 12px;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer}
+  </style>
+  <script>
+    function requireAuth(){
+      const token = localStorage.getItem('token');
+      if(!token){ window.location.href = '/auth-ui/login.html'; return; }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        document.getElementById('who').textContent = payload.name + ' (' + payload.role + ')';
+        
+        // Redirect based on role
+        if (payload.role === 'Teacher') {
+          window.location.href = '/auth-ui/teacher-dashboard.html';
+        } else if (payload.role === 'Student') {
+          window.location.href = '/auth-ui/student-dashboard.html';
+        }
+      } catch (e) {
+        localStorage.removeItem('token');
+        window.location.href = '/auth-ui/login.html';
+      }
+    }
+    async function logout(){ localStorage.removeItem('token'); window.location.href = '/auth-ui/login.html'; }
+    window.addEventListener('DOMContentLoaded', requireAuth);
+  </script>
+  </head>
+<body>
+  <header>
+    <div class="brand"><img src="https://cdn-icons-png.flaticon.com/512/2972/2972088.png"><strong>LMS</strong></div>
+    <div>
+      <span id="who" class="muted"></span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <h2>Welcome</h2>
+      <p class="muted">This is a placeholder dashboard page. We can list courses, assignments, and more.</p>
+    </div>
+  </div>
+  </body>
+  </html>
+
+
