@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
-export const BACKEND_URL = https://narilmsbackend.onrender.com || 'http://localhost:5000';
+export const BACKEND_URL = "https://narilmsbackend.onrender.com"|| 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
     const url = BACKEND_URL;
