@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UploadCloud, File as FileIcon } from 'lucide-react';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const UploadAssignmentModal = ({ isOpen, onClose, assignment, onUploadSuccess }) => {
   const [file, setFile] = useState(null);
@@ -26,7 +27,7 @@ const UploadAssignmentModal = ({ isOpen, onClose, assignment, onUploadSuccess })
         formData.append('file', file);
       }
 
-      const res = await axios.post('http://localhost:5000/api/assignment/submit', formData, {
+      const res = await axios.post(`${BACKEND_URL}/api/assignment/submit`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

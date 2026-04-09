@@ -5,6 +5,7 @@ import { BookOpen, Users, FileText, PlusCircle, Settings } from 'lucide-react';
 import CreateCourseModal from './CreateCourseModal';
 import CourseManager from './CourseManager';
 import TeacherAssistantChat from './TeacherAssistantChat';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const TeacherDashboard = ({ theme = 'light' }) => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -15,7 +16,7 @@ const TeacherDashboard = ({ theme = 'light' }) => {
   const fetchDashboard = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/dashboard/teacher', {
+      const res = await axios.get(`${BACKEND_URL}/api/dashboard/teacher`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDashboardData(res.data);

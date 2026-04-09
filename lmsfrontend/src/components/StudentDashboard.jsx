@@ -5,6 +5,7 @@ import { BookOpen, CheckCircle, Clock, Upload, PlusCircle, ArrowRight } from 'lu
 import UploadAssignmentModal from './UploadAssignmentModal';
 import StudentCourseView from './StudentCourseView';
 import StudentAssistantChat from './StudentAssistantChat';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const StudentDashboard = ({ theme = 'light' }) => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -15,7 +16,7 @@ const StudentDashboard = ({ theme = 'light' }) => {
   const fetchDashboard = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/dashboard/student', {
+      const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDashboardData(res.data);
@@ -33,7 +34,7 @@ const StudentDashboard = ({ theme = 'light' }) => {
   const handleEnroll = async (courseId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/course/enroll/${courseId}`, {}, {
+      await axios.post(`${BACKEND_URL}/api/course/enroll/${courseId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Optionally just refresh the whole dashboard to pull updated courses & assignments

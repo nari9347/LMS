@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BookOpen, Users, LogOut, CheckCircle, Upload, X, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const CourseManager = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState('assignments'); // assignments, attendance, leaderboard, tests
@@ -61,13 +62,13 @@ const CourseManager = ({ course, onBack }) => {
       const token = localStorage.getItem('token');
 
       // Fetch latest course details so enrolled student names are always available
-      const courseRes = await axios.get(`http://localhost:5000/api/course/${course._id}`, {
+      const courseRes = await axios.get(`${BACKEND_URL}/api/course/${course._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCourseInfo(courseRes.data);
       
       // Fetch assignments
-      const asnRes = await axios.get(`http://localhost:5000/api/assignment/course/${course._id}`, {
+      const asnRes = await axios.get(`${BACKEND_URL}/api/assignment/course/${course._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAssignments(asnRes.data);
@@ -75,7 +76,7 @@ const CourseManager = ({ course, onBack }) => {
       // Fetch submissions for all those assignments
       let allSubmissions = [];
       for (const a of asnRes.data) {
-        const subRes = await axios.get(`http://localhost:5000/api/assignment/submissions/${a._id}`, {
+        const subRes = await axios.get(`${BACKEND_URL}/api/assignment/submissions/${a._id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // append assignment details to ease UI rendering
@@ -85,13 +86,13 @@ const CourseManager = ({ course, onBack }) => {
       setSubmissions(allSubmissions);
 
       // Fetch Tests
-      const tstRes = await axios.get(`http://localhost:5000/api/test/${course._id}`, {
+      const tstRes = await axios.get(`${BACKEND_URL}/api/test/${course._id}`, {
           headers: { Authorization: `Bearer ${token}` }
       });
       setTests(tstRes.data);
 
       // Fetch feedback rating summary for teacher view
-      const feedbackRes = await axios.get(`http://localhost:5000/api/course/${course._id}/feedback`, {
+      const feedbackRes = await axios.get(`${BACKEND_URL}/api/course/${course._id}/feedback`, {
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => ({ data: null }));
 
@@ -120,7 +121,7 @@ const CourseManager = ({ course, onBack }) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/assignment', { 
+      const res = await axios.post(`${BACKEND_URL}/api/assignment`, { 
         ...newAssignment, course: course._id 
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -139,7 +140,7 @@ const CourseManager = ({ course, onBack }) => {
       e.preventDefault();
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.post('http://localhost:5000/api/test', {
+        const res = await axios.post(`${BACKEND_URL}/api/test`, {
            course: course._id,
            title: newTest.title,
            minGradeRequired: newTest.minGradeRequired,
@@ -167,7 +168,7 @@ const CourseManager = ({ course, onBack }) => {
       }
 
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/assignment/grade/${subId}`, { grade: numericGrade }, {
+      const res = await axios.put(`${BACKEND_URL}/api/assignment/grade/${subId}`, { grade: numericGrade }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -182,7 +183,7 @@ const CourseManager = ({ course, onBack }) => {
   const handleSaveAttendance = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/attendance/${course._id}`, {
+      await axios.post(`${BACKEND_URL}/api/attendance/${course._id}`, {
          date: attendanceDate,
          records: attendanceRecords
       }, {

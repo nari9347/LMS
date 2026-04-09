@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Bot, CalendarCheck2, CalendarClock, ClipboardList, Loader2, RefreshCw, Trophy, X } from 'lucide-react';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const getId = (value) => {
   if (value && typeof value === 'object') return value._id || value.id;
@@ -42,7 +43,7 @@ const StudentAssistantChat = ({ dashboardData }) => {
 
       for (const course of courses) {
         const attendanceRes = await axios
-          .get(`http://localhost:5000/api/attendance/${course._id}`, { headers })
+          .get(`${BACKEND_URL}/api/attendance/${course._id}`, { headers })
           .catch(() => ({ data: [] }));
 
         for (const dayRecord of attendanceRes.data || []) {
@@ -68,7 +69,7 @@ const StudentAssistantChat = ({ dashboardData }) => {
       let totalTests = 0;
       for (const course of courses) {
         const testRes = await axios
-          .get(`http://localhost:5000/api/test/${course._id}`, { headers })
+          .get(`${BACKEND_URL}/api/test/${course._id}`, { headers })
           .catch(() => ({ data: [] }));
 
         const list = testRes.data || [];
@@ -90,7 +91,7 @@ const StudentAssistantChat = ({ dashboardData }) => {
 
       for (const course of courses) {
         const subsRes = await axios
-          .get(`http://localhost:5000/api/assignment/course/${course._id}/submissions-all`, { headers })
+          .get(`${BACKEND_URL}/api/assignment/course/${course._id}/submissions-all`, { headers })
           .catch(() => ({ data: [] }));
 
         const grouped = {};

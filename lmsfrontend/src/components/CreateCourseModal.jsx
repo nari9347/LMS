@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const CreateCourseModal = ({ isOpen, onClose, onCourseCreated }) => {
   const [formData, setFormData] = useState({ title: '', description: '' });
@@ -12,7 +13,7 @@ const CreateCourseModal = ({ isOpen, onClose, onCourseCreated }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/course', formData, {
+      const res = await axios.post(`${BACKEND_URL}/api/course`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onCourseCreated(res.data);

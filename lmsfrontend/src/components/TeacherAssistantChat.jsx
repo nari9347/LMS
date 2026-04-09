@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import axios from 'axios';
 import { Bot, CalendarCheck2, ClipboardList, Loader2, RefreshCw, Sparkles, Trophy, X } from 'lucide-react';
+import { BACKEND_URL } from '../context/AuthContext';
 
 const isPendingGrade = (grade) => {
   if (grade === undefined || grade === null) return true;
@@ -36,17 +37,17 @@ const TeacherAssistantChat = ({ courses = [], onOpenCourse }) => {
       const attendanceAll = [];
 
       for (const course of courses) {
-        const assignmentsRes = await axios.get(`http://localhost:5000/api/assignment/course/${course._id}`, { headers });
+        const assignmentsRes = await axios.get(`${BACKEND_URL}/api/assignment/course/${course._id}`, { headers });
         const assignments = assignmentsRes.data || [];
 
         const submissionsNested = await Promise.all(
           assignments.map(async (assignment) => {
-            const subRes = await axios.get(`http://localhost:5000/api/assignment/submissions/${assignment._id}`, { headers });
+            const subRes = await axios.get(`${BACKEND_URL}/api/assignment/submissions/${assignment._id}`, { headers });
             return (subRes.data || []).map((sub) => ({ ...sub, assignmentTitle: assignment.title, assignmentId: assignment._id }));
           })
         );
 
-        const attendanceRes = await axios.get(`http://localhost:5000/api/attendance/${course._id}`, { headers }).catch(() => ({ data: [] }));
+        const attendanceRes = await axios.get(`${BACKEND_URL}/api/attendance/${course._id}`, { headers }).catch(() => ({ data: [] }));
 
         courseSnapshots.push({
           course,

@@ -3,8 +3,9 @@ import io from 'socket.io-client';
 import { AuthContext } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send } from 'lucide-react';
+import { BACKEND_URL } from '../context/AuthContext';
 
-const socket = io('http://localhost:5000');
+const socket = io(BACKEND_URL);
 
 const FloatingChat = () => {
     const { user } = useContext(AuthContext);

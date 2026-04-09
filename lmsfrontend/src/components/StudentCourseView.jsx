@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, BookOpen, Clock, FileText, CheckCircle, Upload, ShieldAlert, Award, TrendingUp, Calendar, MessageCircleHeart } from 'lucide-react';
 import UploadAssignmentModal from './UploadAssignmentModal';
 import StudentTestView from './StudentTestView';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext, BACKEND_URL } from '../context/AuthContext';
 
 const StudentCourseView = ({ course, onBack, allSubmissions }) => {
   const { user } = useContext(AuthContext);
@@ -38,9 +38,9 @@ const StudentCourseView = ({ course, onBack, allSubmissions }) => {
       try {
         const token = localStorage.getItem('token');
         const [assRes, testRes, attRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/assignment/course/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`http://localhost:5000/api/test/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`http://localhost:5000/api/attendance/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${BACKEND_URL}/api/assignment/course/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${BACKEND_URL}/api/test/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${BACKEND_URL}/api/attendance/${course._id}`, { headers: { Authorization: `Bearer ${token}` } }),
           // Calculate leaderboard dynamically or fetch if there's an API, here we just fetch assignments and all subs if possible.
           // Since we need to show the actual leaderboard, we'll fetch all subs for the course and build it, or we could just use the existing attendance data.
         ]);
@@ -48,7 +48,7 @@ const StudentCourseView = ({ course, onBack, allSubmissions }) => {
         setTests(testRes.data);
         setAttendance(attRes.data);
 
-        const feedbackRes = await axios.get(`http://localhost:5000/api/course/${course._id}/feedback`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }));
+        const feedbackRes = await axios.get(`${BACKEND_URL}/api/course/${course._id}/feedback`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }));
         if (feedbackRes?.data) {
           setFeedbackSummary(feedbackRes.data.summary || { total: 0, avgRating: 0, sentiments: { good: 0, avg: 0, bad: 0, worst: 0 } });
           setMyFeedback(feedbackRes.data.myFeedback || null);
@@ -62,7 +62,7 @@ const StudentCourseView = ({ course, onBack, allSubmissions }) => {
         }
 
         // Build the leaderboard from all submissions in the class
-        const allSubsRes = await axios.get(`http://localhost:5000/api/assignment/course/${course._id}/submissions-all`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] }));
+        const allSubsRes = await axios.get(`${BACKEND_URL}/api/assignment/course/${course._id}/submissions-all`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] }));
         // If we can't get all submissions cleanly, we'll just skip the leaderboard on student side or mock it from their own data for now.
         // Let's assume we can calculate a simplified leaderboard or fetch it.
         // Actually, we did add a teacher leaderboard. Let's see if we can get it from the submissions.
@@ -103,7 +103,7 @@ const StudentCourseView = ({ course, onBack, allSubmissions }) => {
       setFeedbackSaving(true);
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/course/${course._id}/feedback`,
+        `${BACKEND_URL}/api/course/${course._id}/feedback`,
         {
           rating: Number(feedbackForm.rating),
           sentiment: feedbackForm.sentiment,
@@ -112,7 +112,7 @@ const StudentCourseView = ({ course, onBack, allSubmissions }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const feedbackRes = await axios.get(`http://localhost:5000/api/course/${course._id}/feedback`, {
+      const feedbackRes = await axios.get(`${BACKEND_URL}/api/course/${course._id}/feedback`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

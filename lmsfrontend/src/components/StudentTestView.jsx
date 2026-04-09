@@ -43,7 +43,7 @@ const StudentTestView = ({ test, onBack, onComplete }) => {
 
     // Normally you'd send this to the backend:
     // try {
-    //   await axios.post(`http://localhost:5000/api/test/${test._id}/submit`, { answers, score: finalScore }, { headers: ... });
+    //   await axios.post(`${BACKEND_URL}/api/test/${test._id}/submit`, { answers, score: finalScore }, { headers: ... });
     // } catch(...) {}
   };
 

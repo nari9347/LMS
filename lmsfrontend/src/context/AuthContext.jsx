@@ -2,8 +2,10 @@ import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
+    const url = BACKEND_URL;
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const res = await axios.get('http://localhost:5000/api/auth/me', {
+            const res = await axios.get(url+'/api/auth/me', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUser(res.data);
@@ -38,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', {
+            const res = await axios.post(url+'/api/auth/login', {
                 email: (email || '').trim().toLowerCase(),
                 password
             });
@@ -56,7 +58,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password, role, accessCode) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', {
+            const res = await axios.post(url + '/api/auth/register', {
                 name: (name || '').trim(),
                 email: (email || '').trim().toLowerCase(),
                 password,
@@ -83,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, loading, authError, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, loading, authError, login, register, logout, url }}>
             {children}
         </AuthContext.Provider>
     );
